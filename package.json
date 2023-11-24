@@ -1,0 +1,15 @@
+{
+  "name": "dbfinal",
+  "version": "1.0.0",
+  "description": "Database Final",
+  "main": "index.js",
+  "scripts": {
+    "test": "index.js"
+  },
+  "author": "Chris Hughes",
+  "license": "ISC",
+  "dependencies": {
+    "prompt-sync": "^4.2.0",
+    "sqlite3": "^5.1.6"
+  }
+}
