@@ -1,6 +1,5 @@
 const sqlite3 = require('sqlite3').verbose();
 const db = new sqlite3.Database('data/final.db');
-//const db = new sqlite3.Database(':memory:');
 
 db.serialize(() => {
   db.run(`
@@ -28,7 +27,7 @@ last_name VARCHAR[50],
 email VARCHAR[100])
 `);
 
-  db.run(`
+ db.run(`
 CREATE TABLE orders
 (order_id INTEGER PRIMARY KEY,
 customer_id INTEGER,
@@ -90,7 +89,7 @@ quantity INTEGER)
 
 	const ordersQuery = db.prepare("INSERT INTO orders (customer_id, book_id, order_date, quantity) VALUES (?, ?, ?, ?)")
 	const orders = [
-		[1, 2, new Date().toISOString(), 4 ],
+		[1, 2, new Date().toISOString(), 4],
 		[2, 3, new Date().toISOString(), 1],
 		[3, 5, new Date().toISOString(), 23],
 		[4, 2, new Date().toISOString(), 2],
@@ -104,12 +103,6 @@ quantity INTEGER)
 	}
 
 	ordersQuery.finalize();
-
-	db.each("SELECT id, title, author_id, genre, price FROM books", (err, row) => {
-		console.log("Book List");
-		if (err) console.error(err)
-		console.log(`${row.id}: "${row.title}" ${row.author_id} ${row.genre} ${row.price}`);
-	});
 
 });
 
