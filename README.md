@@ -132,18 +132,19 @@ This query is fairly straight forward. The book titles and author names are in d
     SELECT b.title, a.author_name FROM books b
     JOIN authors a ON b.author_id=a.author_id
 
-In order to get the total sales, multiply the combined quantities of a book id by using the `count()` function and then grouping by book id.
+In order to get the total sales, multiply the combined quantities of a book id, by using the `SUM()` function, multiplying by price and then grouping by book id.
 
     SELECT b.title, count(o.quantity) * b.price AS "Total Sales"
     FROM books b
     JOIN orders o ON b.id=o.book_id
     GROUP BY  b.id
 
-I join the book and order table and aggregate genre so that I can count the combined quantities based on the genre
+I join the book and order table and aggregate genre so that I can count the combined quantities based on the genre. I test to make sure the genre isn't been left blank as well.
 
     SELECT b.genre AS "Bestselling Genres"
     FROM books b
     JOIN orders o ON b.id=o.order_id
+	WHERE b.genre <> ''
     GROUP BY b.genre
     ORDER BY COUNT(o.quantity) DESC
     LIMIT 3

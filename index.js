@@ -31,13 +31,12 @@ function main() {
       process.exit();
     case "?":
       console.log(help());
-			break;
+      break;
     default:
       console.log("\nSorry, didn't recognize that one. ? for help\n\n");
+      main();
   }
-  main();
 }
-
 
 /**
  *Generates queries for the final project questions
@@ -64,25 +63,35 @@ i: Identiy customers with no orders
 
   switch (res) {
     case "b":
+      // Retrieve the list of books with their authors.
       q = `
 SELECT b.title, a.author_name FROM books b
 JOIN authors a ON b.author_id=a.author_id
 `;
+      break;
     case "s":
+      // Find the total sales (quantity * price) for each book.
       q = `
-SELECT b.title, o.quantity * b.price AS "Total Sales"
+SELECT b.title, SUM(o.quantity) * b.price AS "Total Sales"
 FROM books b
 JOIN orders o ON b.id=o.book_id
+GROUP BY b.id
 `;
+      break;
     case "t":
+      // Identify the top 3 bestselling genres.
       q = `
 SELECT b.genre AS "Bestselling Genres"
 FROM books b
 JOIN orders o ON b.id=o.order_id
-ORDER BY o.quantity DESC
+WHERE b.genre <> ''
+GROUP BY b.genre
+ORDER BY COUNT(o.quantity) DESC
 LIMIT 3
 `;
+      break;
     case "m":
+      // List customers who have made at least two orders.
       q = `
 SELECT c.customer_id,
 c.first_name || " " || c.last_name AS "Customer Name",
@@ -92,14 +101,18 @@ JOIN orders o ON c.customer_id=o.customer_id
 GROUP BY c.customer_id
 HAVING count(o.order_id)>1
 `;
+      break;
     case "a":
+		// Calculate the average price of books for each author.
       q = `
 SELECT a.author_id, a.author_name, avg(b.price) AS "Average Price"
 FROM authors a
 JOIN books b ON a.author_id=b.author_id
 GROUP BY a.author_id
 `;
+      break;
     case "u":
+      // Update the price of all books in a specific genre by 10%.
       const genre = prompt("Which Genre would you like to update? ");
       const update = prompt("Increment (+) or decrement (-)? ");
       let o;
@@ -118,24 +131,31 @@ WHERE genre="${genre}"
       msg = `updating ${genre}`;
       type = "update";
 
+      break;
     case "n":
+		// Retrieve the authors who have not published any books.
       q = `
 SELECT a.author_id, a.author_name
 FROM authors a
 LEFT JOIN books b ON a.author_id=b.author_id
 WHERE b.author_id IS NULL
 `;
+      break;
     case "i":
+		// Identify customers who have not placed any orders.
       q = `
 SELECT c.customer_id, c.first_name || " " || c.last_name As "Customer Name"
 FROM customers c
 LEFT JOIN orders o ON c.customer_id=o.customer_id
 WHERE o.customer_id IS NULL
 `;
+      break;
+    default:
+      console.log("sorry, I Didn't catch that");
+      sort();
   }
   query(q, type, msg);
 }
-
 
 /**
  *Generates simple search queries
@@ -145,7 +165,7 @@ function search() {
   console.log("What would you like to search for?\n");
   console.log("Enter Corresponding letter");
   console.log(
-    "b: books, a, authors, o: orders, c:customers r: return to last menu\n",
+    "b: books, a, authors, o: orders, c:customers r: return to last menu\n"
   );
   const res = prompt();
 
@@ -212,7 +232,7 @@ WHERE last_name="${customer}"
       if (err) console.error(err);
       if (!rows && type != "update")
         console.log("\n\n**Can't find record match.**\n\n");
-    },
+    }
   );
 
   searchQuery.finalize();
@@ -225,7 +245,7 @@ function list() {
   console.log("What would you like to list?\n");
   console.log("Enter Corresponding letter");
   console.log(
-    "b: books, a, authors, o: orders, c:customers r: return to last menu\n",
+    "b: books, a, authors, o: orders, c:customers r: return to last menu\n"
   );
   let res = prompt();
   let q;
@@ -241,8 +261,7 @@ JOIN authors a ON b.author_id=a.author_id
       break;
     case "a":
       console.log("Author List\n\n");
-      q =
-        "SELECT author_id, author_name, birth_date, nationality FROM authors";
+      q = "SELECT author_id, author_name, birth_date, nationality FROM authors";
       break;
     case "o":
       console.log("Orders List\n\n");
@@ -275,7 +294,7 @@ FROM customers
       list();
   }
 
-	query(q)
+  query(q);
 }
 
 /**
@@ -285,7 +304,7 @@ function add() {
   console.log("What table would you like to add to?\n");
   console.log("Enter Corresponding letter");
   console.log(
-    "b: books, a, authors, o: orders, c:customers r: return to last menu\n",
+    "b: books, a, authors, o: orders, c:customers r: return to last menu\n"
   );
 
   const res = prompt();
@@ -295,7 +314,7 @@ function add() {
   switch (res) {
     case "b":
       console.log(
-        "Plese enter the book details. For author id, list authors\n",
+        "Plese enter the book details. For author id, list authors\n"
       );
 
       const title = prompt("Title: ");
@@ -321,7 +340,7 @@ VALUES ("${name}", "${birth}", "${nationality}")`;
 
     case "o":
       console.log(
-        "In order to add order, please search book and customer for ID\n",
+        "In order to add order, please search book and customer for ID\n"
       );
 
       const customerId = parseInt(prompt("Customer ID: "));
@@ -351,7 +370,7 @@ VALUES ("${first}", "${last}", "${email}")`;
       console.log("Sorry, didn't catch that.");
   }
 
-	query(q, t='success', success);
+  query(q, (t = "success"), success);
 }
 
 /**
@@ -359,12 +378,12 @@ VALUES ("${first}", "${last}", "${email}")`;
  */
 function remove() {
   console.log(
-    "CAUTION: Deleting from the database may cause data inconsistencies!",
+    "CAUTION: Deleting from the database may cause data inconsistencies!"
   );
   console.log("What table would you like to remove from?\n");
   console.log("Enter Corresponding letter");
   console.log(
-    "b: books, a, authors, o: orders, c:customers r: return to last menu\n",
+    "b: books, a, authors, o: orders, c:customers r: return to last menu\n"
   );
 
   const res = prompt();
@@ -417,12 +436,12 @@ function remove() {
 
 /**
  * Queries the database
- * @param {string} q Query that is sent to the database 
+ * @param {string} q Query that is sent to the database
  * @param {string} t the type of query 'success' or 'update'
  * @param {string} m message displayed in the callback after the query
  */
 function query(q, t = "", m = "") {
-  if (m && m != 'success') console.log(m);
+  if (m && m != "success") console.log(m);
 
   const searchQuery = db.prepare(q);
 
@@ -433,10 +452,10 @@ function query(q, t = "", m = "") {
     },
     (err, rows) => {
       if (err) console.error(err);
-			if (t === 'success') console.log(m);
-      if (!rows && t != 'update' && t != 'success')
+      if (t === "success") console.log(m);
+      if (!rows && t != "update" && t != "success")
         console.log("\n\n**Can't find record match.**\n\n");
-    },
+    }
   );
 
   searchQuery.finalize();
