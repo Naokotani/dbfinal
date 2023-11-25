@@ -3,15 +3,16 @@ const db = new sqlite3.Database("data/final.db");
 const prompt = require("prompt-sync")({ sigint: true });
 
 main();
+
+/**
+ *Main function that sorts prompts to direct to the correct query builder
+ */
 function main() {
   console.log("What would you like to do? (? to list commands 'exit' to quit)");
   let res = prompt();
   switch (res) {
     case "sort":
       sort();
-      break;
-    case "?":
-      help();
       break;
     case "list":
       list();
@@ -28,25 +29,19 @@ function main() {
     case "exit":
       db.close();
       process.exit();
+    case "?":
+      console.log(help());
+			break;
     default:
       console.log("\nSorry, didn't recognize that one. ? for help\n\n");
-      main();
   }
-}
-
-function help() {
-  console.log(`
-?: For more options
-search: search for specific entries
-list: Lists database tables
-add: Add entries to database
-remove: Remove entries from database
-exit: Use anywhere to exit app
-sort: Sorted and advanced queries
-`);
   main();
 }
 
+
+/**
+ *Generates queries for the final project questions
+ */
 function sort() {
   console.log(`
 Please enter one of the following
@@ -141,6 +136,10 @@ WHERE o.customer_id IS NULL
   query(q, type, msg);
 }
 
+
+/**
+ *Generates simple search queries
+ */
 function search() {
   const db = new sqlite3.Database("data/final.db");
   console.log("What would you like to search for?\n");
@@ -219,6 +218,9 @@ WHERE last_name="${customer}"
   searchQuery.finalize();
 }
 
+/**
+ * Lists tables in the database
+ */
 function list() {
   console.log("What would you like to list?\n");
   console.log("Enter Corresponding letter");
@@ -276,6 +278,9 @@ FROM customers
 	query(q)
 }
 
+/**
+ * Generates queries to add rows to the database
+ */
 function add() {
   console.log("What table would you like to add to?\n");
   console.log("Enter Corresponding letter");
@@ -349,6 +354,9 @@ VALUES ("${first}", "${last}", "${email}")`;
 	query(q, t='success', success);
 }
 
+/**
+ * Removes rows from the database
+ */
 function remove() {
   console.log(
     "CAUTION: Deleting from the database may cause data inconsistencies!",
@@ -397,7 +405,7 @@ function remove() {
       remove();
   }
 
-  const q = `DELETE FROM ${table} ${where}`;
+  const query = `DELETE FROM ${table} ${where}`;
 
   const searchQuery = db.prepare(query);
   searchQuery.run((err) => {
@@ -407,6 +415,12 @@ function remove() {
   searchQuery.finalize();
 }
 
+/**
+ * Queries the database
+ * @param {string} q Query that is sent to the database 
+ * @param {string} t the type of query 'success' or 'update'
+ * @param {string} m message displayed in the callback after the query
+ */
 function query(q, t = "", m = "") {
   if (m && m != 'success') console.log(m);
 
@@ -428,3 +442,19 @@ function query(q, t = "", m = "") {
   searchQuery.finalize();
 }
 db.close();
+
+/**
+ *Generates a help string
+ *@returns {string} to describe main()
+ */
+function help() {
+  return `
+?: For more options
+search: search for specific entries
+list: Lists database tables
+add: Add entries to database
+remove: Remove entries from database
+exit: Use anywhere to exit app
+sort: Sorted and advanced queries
+`;
+}
