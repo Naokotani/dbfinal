@@ -134,7 +134,7 @@ This query is fairly straight forward. The book titles and author names are in d
 
 In order to get the total sales, multiply the combined quantities of a book id, by using the `SUM()` function, multiplying by price and then grouping by book id.
 
-    SELECT b.title, count(o.quantity) * b.price AS "Total Sales"
+    SELECT b.title, SUM(o.quantity) * b.price AS "Total Sales"
     FROM books b
     JOIN orders o ON b.id=o.book_id
     GROUP BY  b.id
