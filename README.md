@@ -98,7 +98,7 @@ All of the columns are directly related to the primary key. We know this because
 
 ### Non-primary key attributes depend on all attributes of a composite key.
 
-None of the tables rely on a composite key. You could consider using a composite key in the orders table using  `customer_id` , `book_id and =date`,  as long as you are certain to be able to record the exact time of the purchase and not just the day of the purchase, but if multiple books were bought at the same time.
+None of the tables rely on a composite key. You could consider using a composite key in the orders table using  `customer_id` , `book_id and date`,  as long as you are certain to be able to record the exact time of the purchase and not just the day of the purchase, but if multiple books were bought at the same time.
 
 
 <a id="orgfb3b2e4"></a>
