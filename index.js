@@ -1,47 +1,52 @@
-const sqlite3 = require("sqlite3").verbose();
+import sqlite3 from "sqlite3";
+import { input } from "@inquirer/prompts";
 const db = new sqlite3.Database("data/final.db");
-const prompt = require("prompt-sync")({ sigint: true });
-
-main();
 
 /**
  *Main function that sorts prompts to direct to the correct query builder
  */
-function main() {
-  console.log("What would you like to do? (? to list commands 'exit' to quit)");
-  let res = prompt();
-  switch (res) {
-    case "sort":
-      sort();
-      break;
-    case "list":
-      list();
-      break;
-    case "add":
-      add();
-      break;
-    case "search":
-      search();
-      break;
-    case "remove":
-      remove();
-      break;
-    case "exit":
-      db.close();
-      process.exit();
-    case "?":
-      console.log(help());
-      break;
-    default:
-      console.log("\nSorry, didn't recognize that one. ? for help\n\n");
-      main();
+async function main() {
+  while (true) {
+    console.log(
+      "What would you like to do? (? to list commands 'exit' to quit)"
+    );
+    const res = await input({
+      message: "> ",
+    });
+    switch (res) {
+      case "sort":
+        sort();
+        break;
+      case "list":
+        list();
+        break;
+      case "add":
+        await add();
+        break;
+      case "search":
+        search();
+        break;
+      case "remove":
+        remove();
+        break;
+      case "exit":
+        db.close();
+        process.exit();
+      case "?":
+        console.log(help());
+        break;
+      default:
+        console.log("\nSorry, didn't recognize that one. ? for help\n\n");
+    }
   }
 }
+
+main();
 
 /**
  *Generates queries for the final project questions
  */
-function sort() {
+async function sort() {
   console.log(`
 Please enter one of the following
 *********************************
@@ -55,7 +60,7 @@ a: Average Price for authors books
 n: Authors with no published books
 i: Identiy customers with no orders
 `);
-  const res = prompt();
+  const res = input({ message: "> " });
 
   let q;
   let type;
@@ -103,7 +108,7 @@ HAVING count(o.order_id)>1
 `;
       break;
     case "a":
-		// Calculate the average price of books for each author.
+      // Calculate the average price of books for each author.
       q = `
 SELECT a.author_id, a.author_name, avg(b.price) AS "Average Price"
 FROM authors a
@@ -113,8 +118,12 @@ GROUP BY a.author_id
       break;
     case "u":
       // Update the price of all books in a specific genre by 10%.
-      const genre = prompt("Which Genre would you like to update? ");
-      const update = prompt("Increment (+) or decrement (-)? ");
+      const genre = await input({
+        message: "Which Genre would you like to update? ",
+      });
+      const update = await input({
+        message: "Increment (+) or decrement (-)? ",
+      });
       let o;
       if (update === "+") {
         o = "*";
@@ -133,7 +142,7 @@ WHERE genre="${genre}"
 
       break;
     case "n":
-		// Retrieve the authors who have not published any books.
+      // Retrieve the authors who have not published any books.
       q = `
 SELECT a.author_id, a.author_name
 FROM authors a
@@ -142,7 +151,7 @@ WHERE b.author_id IS NULL
 `;
       break;
     case "i":
-		// Identify customers who have not placed any orders.
+      // Identify customers who have not placed any orders.
       q = `
 SELECT c.customer_id, c.first_name || " " || c.last_name As "Customer Name"
 FROM customers c
@@ -160,20 +169,20 @@ WHERE o.customer_id IS NULL
 /**
  *Generates simple search queries
  */
-function search() {
+async function search() {
   const db = new sqlite3.Database("data/final.db");
   console.log("What would you like to search for?\n");
   console.log("Enter Corresponding letter");
   console.log(
     "b: books, a, authors, o: orders, c:customers r: return to last menu\n"
   );
-  const res = prompt();
+  const res = await input({ message: "> " });
 
   let query;
 
   switch (res) {
     case "b":
-      const book = prompt("Enter the book title: ");
+      const book = await input({ message: "Enter the book title: " });
       query = `
 SELECT b.id, b.title, a.author_name, b.genre, b.price
 FROM books b
@@ -182,7 +191,7 @@ WHERE b.title="${book}";
 `;
       break;
     case "a":
-      const author = prompt("Enter the author name: ");
+      const author = await input({ message: "Enter the author name: " });
       query = `
 SELECT author_id, author_name, birth_date, nationality
 FROM authors
@@ -190,7 +199,7 @@ WHERE author_name="${author}"
 `;
       break;
     case "o":
-      const order = parseInt(prompt("Enter the order ID: "));
+      const order = await input({ message: "Enter the order ID: " });
       query = `
 SELECT o.order_id,
 c.first_name || " " || c.last_name AS "Customer Name",
@@ -204,7 +213,7 @@ WHERE o.order_id=${order}
 `;
       break;
     case "c":
-      const customer = prompt("Enter customer last name: ");
+      const customer = await input({ message: "Enter customer last name: " });
       query = `
 SELECT customer_id,
 first_name || " " || last_name AS "Customer Name",
@@ -241,13 +250,13 @@ WHERE last_name="${customer}"
 /**
  * Lists tables in the database
  */
-function list() {
+async function list() {
   console.log("What would you like to list?\n");
   console.log("Enter Corresponding letter");
   console.log(
     "b: books, a, authors, o: orders, c:customers r: return to last menu\n"
   );
-  let res = prompt();
+  let res = await input("> ");
   let q;
 
   switch (res) {
@@ -300,14 +309,14 @@ FROM customers
 /**
  * Generates queries to add rows to the database
  */
-function add() {
+async function add() {
   console.log("What table would you like to add to?\n");
   console.log("Enter Corresponding letter");
   console.log(
     "b: books, a, authors, o: orders, c:customers r: return to last menu\n"
   );
 
-  const res = prompt();
+  const res = await input({ message: "> " });
   let q;
   let success;
 
@@ -317,10 +326,10 @@ function add() {
         "Plese enter the book details. For author id, list authors\n"
       );
 
-      const title = prompt("Title: ");
-      const authorId = parseInt(prompt("Author ID:"));
-      const genre = prompt("Genre");
-      const price = parseInt(prompt("price"));
+      const title = await input({ message: "Title: " });
+      const authorId = parseInt(await input({ message: "Author ID:" }));
+      const genre = await input({ message: "Genre: " });
+      const price = parseInt(await input({ message: "Price: " }));
       success = title + " added";
       q = `
 INSERT INTO books (title, author_id, genre, price)
@@ -328,10 +337,10 @@ VALUES ("${title}", ${authorId}, "${genre}", ${price})`;
       break;
 
     case "a":
-      const name = prompt("Name: ");
+      const name = await input({ message: "Name: " });
       console.log("Enter Birth date in format YYYY-MM-DD");
-      const birth = prompt("Birth Date: ");
-      const nationality = prompt("Nationality: ");
+      const birth = await input({ message: "Birth Date: " });
+      const nationality = await input({ message: "Nationality: " });
       success = name + " added";
       q = `
 INSERT INTO authors (author_name, birth_date, nationality)
@@ -343,9 +352,9 @@ VALUES ("${name}", "${birth}", "${nationality}")`;
         "In order to add order, please search book and customer for ID\n"
       );
 
-      const customerId = parseInt(prompt("Customer ID: "));
-      const bookId = parseInt(prompt("Book ID: "));
-      const quantity = parseInt(prompt("Quantity: "));
+      const customerId = parseInt(await input({ message: "Customer ID: " }));
+      const bookId = parseInt(await input({ message: "Book ID: " }));
+      const quantity = parseInt(await input({ message: "Quantity: " }));
       const date = new Date().toISOString();
       success = "Order Added";
       q = `
@@ -354,9 +363,9 @@ VALUES (${customerId}, ${bookId}, "${date}", ${quantity})`;
       break;
 
     case "c":
-      const first = prompt("First Name: ");
-      const last = prompt("Last Name: ");
-      const email = prompt("Email: ");
+    const first = await input({message: "First Name: "});
+    const last = await input({message: "Last Name: "});
+    const email = await input({message: "Email: "});
       success = first + " " + last + " Added";
       q = `
 INSERT INTO customers (first_name, last_name, email)
@@ -370,13 +379,13 @@ VALUES ("${first}", "${last}", "${email}")`;
       console.log("Sorry, didn't catch that.");
   }
 
-  query(q, (t = "success"), success);
+  query(q, "success", success);
 }
 
 /**
  * Removes rows from the database
  */
-function remove() {
+async function remove() {
   console.log(
     "CAUTION: Deleting from the database may cause data inconsistencies!"
   );
@@ -386,7 +395,7 @@ function remove() {
     "b: books, a, authors, o: orders, c:customers r: return to last menu\n"
   );
 
-  const res = prompt();
+  const res = await input({message: "> "});
   let success;
   let where;
   let table;
@@ -394,25 +403,25 @@ function remove() {
   switch (res) {
     case "a":
       table = "authors";
-      const authorId = parseInt(prompt("Please enter Author ID: "));
+    const authorId = parseInt(await input({message: "Please enter Author ID: "}));
       where = `WHERE author_id=${authorId}`;
       success = authorId + " deleted";
       break;
     case "c":
       table = "customers";
-      const customerId = parseInt(prompt("Please enter Customer ID: "));
+    const customerId = parseInt(await input({message: "Please enter Customer ID: "}));
       where = `WHERE customer_id=${customerId}`;
       success = customerId + " deleted";
       break;
     case "o":
       table = "orders";
-      const orderId = parseInt(prompt("Please enter Order ID: "));
+    const orderId = parseInt(await input({message: "Please enter Order ID: "}));
       where = `WHERE order_id=${orderId}`;
       success = orderId + " deleted";
       break;
     case "b":
       table = "books";
-      const bookId = parseInt(prompt("Please enter Book ID: "));
+    const bookId = parseInt(await input({message: "Please enter Book ID: "}));
       where = `WHERE id=${bookId}`;
       success = bookId + " deleted";
       break;
