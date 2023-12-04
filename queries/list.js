@@ -1,18 +1,17 @@
-import { input } from "@inquirer/prompts";
+import select from '@inquirer/select';
+import choices from './choices.js';
 
 /**
  * Lists tables in the database
  */
 
 const list  = async () => {
-  console.log("What would you like to list?\n");
-  console.log("Enter Corresponding letter");
-  console.log(
-    "b: books, a, authors, o: orders, c:customers r: return to last menu\n"
-  );
-  let res = await input({message: "> "});
-  let q;
+	const res = await select({
+		message: "What would you like to list?\n",
+		choices: choices(),
+	});
 
+  let q;
   switch (res) {
     case "b":
       console.log("Book list\n***********************\n");
@@ -49,12 +48,11 @@ customer_id
 FROM customers
 `;
       break;
+	case 'r':
+			return;
     case "exit":
       db.close();
       process.exit();
-    default:
-      console.log("Sorry, didn't catch that");
-      list();
   }
 
 	return {query: q, message: '\n***********************\n'}

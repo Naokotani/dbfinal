@@ -1,16 +1,16 @@
 import { input } from "@inquirer/prompts";
+import select from '@inquirer/select';
+import choices from './choices.js';
 
 /**
  * Generates queries to add rows to the database
  */
 const add = async () => {
-  console.log("What table would you like to add to?\n");
-  console.log("Enter Corresponding letter");
-  console.log(
-    "b: books, a, authors, o: orders, c:customers r: return to last menu\n"
-  );
-
-  const res = await input({ message: "> " });
+	const res = await select({
+		message: "What table would you like to add to?",
+		choices: choices(),
+	});
+	
   let q;
   let success;
 
@@ -21,9 +21,14 @@ const add = async () => {
       );
 
       const title = await input({ message: "Title: " });
-      const authorId = parseInt(await input({ message: "Author ID:" }));
+			const	authorId = parseInt(await input({ message: "Author ID:" }));
       const genre = await input({ message: "Genre: " });
-      const price = parseInt(await input({ message: "Price: " }));
+			const	price = parseInt(await input({ message: "Price: " }));
+			if (isNaN(price) || isNaN(authorId)) {
+				console.log("Not a valid number");
+				return;
+			}
+
       success = `\n${title} added\n`;
       q = `
 INSERT INTO books (title, author_id, genre, price)
@@ -46,9 +51,14 @@ VALUES ("${name}", "${birth}", "${nationality}")`;
         "In order to add order, please search book and customer for ID\n"
       );
 
-      const customerId = parseInt(await input({ message: "Customer ID: " }));
-      const bookId = parseInt(await input({ message: "Book ID: " }));
-      const quantity = parseInt(await input({ message: "Quantity: " }));
+			const	customerId = parseInt(await input({ message: "Customer ID: " }));
+			const	bookId = parseInt(await input({ message: "Book ID: " }));
+			const	quantity = parseInt(await input({ message: "Quantity: " }));
+			if (isNaN(customerId) || isNaN(bookId) || isNaN(quantity)){
+				console.log("Not a valid number.")
+				return;
+			}
+
       const date = new Date().toISOString();
       success = "\nOrder Added\n";
       q = `
@@ -65,7 +75,8 @@ VALUES (${customerId}, ${bookId}, "${date}", ${quantity})`;
 INSERT INTO customers (first_name, last_name, email)
 VALUES ("${first}", "${last}", "${email}")`;
       break;
-
+		case 'back':
+			return;
     case "exit":
       db.close();
       process.exit();

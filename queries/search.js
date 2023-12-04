@@ -1,20 +1,20 @@
-import sqlite3 from "sqlite3";
 import { input } from "@inquirer/prompts";
-const db = new sqlite3.Database("data/final.db");
+import select from '@inquirer/select';
+import choices from './choices.js';
 
 /**
  *Generates simple search queries
  */
 
 const search = async () => {
-  console.log("What would you like to search for?\n");
-  console.log("Enter Corresponding letter");
-  console.log(
-    "b: books, a, authors, o: orders, c:customers r: return to last menu\n",
-  );
-  const res = await input({ message: "> " });
-
   let query;
+	let msg = "\n***********************\n"
+
+	const res = await select({
+		message: "What would you like to search for?\n",
+		choices: choices(),
+	});
+
 
   switch (res) {
     case "b":
@@ -57,26 +57,19 @@ email
 FROM customers
 WHERE last_name="${customer}"
 `;
-      break;
+     break;
+		case 'back':
+			return;
     case "exit":
       process.exit();
     default:
       console.log("Sorry, didn't catch that");
       search();
   }
+	console.log(msg);
 
-	return new Promise((resolve, reject) => {
-		const searchQuery = db.prepare(query);
-		searchQuery.get((err, row) => {
-			console.log(row)
-
-			if (!err) {
-        resolve();
-			} else {
-				reject(() => console.log(err))
-			}
-		});
-	});
+	return {query: query, message: msg};
 }
+
 
 export default search;

@@ -1,6 +1,7 @@
 import sqlite3 from "sqlite3";
-import { input } from "@inquirer/prompts";
+import select from '@inquirer/select';
 const db = new sqlite3.Database("data/final.db");
+
 
 /*Import query moldules*/
 import add from "./queries/add.js";
@@ -14,31 +15,63 @@ import remove from "./queries/remove.js";
  */
 async function main() {
   while (true) {
-    console.log(
-      "What would you like to do? (? to list commands 'exit' to quit)",
-    );
-    const res = await input({
-      message: "> ",
-    });
-    let q;
+    let q = {};
+
+		const res = await select({
+			message: 'What would you like to do?',
+			choices: [
+				{
+					name: 'Queries',
+					value: 'queries',
+					description: 'Queries for the final',
+				},
+				{
+					name: 'List',
+					value: 'list',
+					description: 'List the different tables in the database',
+				},
+				{
+					name: 'Add',
+					value: 'add',
+					description: 'Add a new row to a table',
+				},
+				{
+					name: 'Search',
+					value: 'search',
+					description: 'Search for a single row in a table',
+				},
+				{
+					name: 'Remove',
+					value: 'remove',
+					description: 'Remove a single row from a table',
+				},
+				{
+					name: 'Exit',
+					value: 'exit',
+					description: 'Exit the app',
+				},
+			],
+		});
     switch (res) {
-      case "sort":
+      case "queries":
         q = await sort();
-        await query(q.query, q.message);
+        q && await queryEach(q.query, q.message);
         break;
       case "list":
         q = await list();
-        await query(q.query, q.message);
+        q && await queryEach(q.query, q.message);
         break;
       case "add":
         q = await add();
-        await query(q.query, q.message);
+        q && await queryEach(q.query, q.message);
         break;
       case "search":
-        await search();
+        q = await search();
+				q && await queryGet(q.query, q.message);
         break;
       case "remove":
-        await remove();
+				q = await remove();
+				q && await queryRun(q.query, q.message);
         break;
       case "exit":
         process.exit();
@@ -58,44 +91,58 @@ main();
  * @param {string} q Query that is sent to the database
  * @param {string} m message displayed in the callback after the query
  */
-async function query(q, m = '') {
+async function queryEach(q, m = '') {
   return new Promise((resolve, reject) => {
     const searchQuery = db.prepare(q);
     let err;
-    searchQuery.each(
-      (e, row) => {
-        err = e;
-        if (t == 'search') console.log(row);
-      },
-      (e, rows) => {
-        err = e;
-        console.log(rows);
-      },
-      (e) => {
-        err = e;
+		searchQuery.each(
+			(e) => {
+				err = e;
+			},
+			(e, rows) => {
+				err = e;
+				console.log(rows);
+			},
+			(e) => {
+				err = e;
 				console.log(m);
-        if (!err) {
-          resolve();
-        } else {
-          reject(() => console.log(err));
-        }
-      },
-    );
+				if (!err) {
+					resolve();
+				} else {
+					reject(() => console.log(err));
+				}
+			},
+		)
   });
 }
 
-/**
- *Generates a help string
- *@returns {string} to describe main() options
- */
-function help() {
-  return `
-?: For more options
-search: search for specific entries
-list: Lists database tables
-add: Add entries to database
-remove: Remove entries from database
-exit: Use anywhere to exit app
-sort: Sorted and advanced queries
-`;
+async function queryRun(q, m) {
+  return new Promise((resolve, reject) => {
+    const searchQuery = db.prepare(q);
+    searchQuery.run((err) => {
+      !err && console.log(m);
+      searchQuery.finalize();
+      if (!err) {
+        resolve();
+      } else {
+        reject(() => console.log(err));
+      }
+    });
+  });
+}
+
+async function queryGet(q, m) {
+	return new Promise((resolve, reject) => {
+		const searchQuery = db.prepare(q);
+		searchQuery.get((err, row) => {
+			row?console.log(row):
+				console.log("\n\n**We couldn't find any results matching your query**\n\n");
+			console.log(m)
+			if (!err) {
+        resolve();
+			} else {
+				reject(() => console.log(err))
+			}
+		});
+	});
 }

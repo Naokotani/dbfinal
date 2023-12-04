@@ -1,25 +1,70 @@
 import { input } from "@inquirer/prompts";
+import select from '@inquirer/select';
 
 /**
  *Generates queries for the final project questions
  */
 const sort = async () => {
-  console.log(`
-Please enter one of the following
-*********************************
-
-b: Books with author names
-s: Total sales 
-t: Top 3 bestsellers
-m: Customers with multiple orders
-u: update price of all books by =/- 10%
-a: Average Price for author's books
-n: Authors with no published books
-i: Identiy customers with no orders
-`);
-  const res = await input({ message: "> " });
-
   let q;
+	let msg = "\n***********************\n"
+
+  const res = await select({
+    message: "Select a package manager",
+    choices: [
+      {
+        name: "Books with authors",
+        value: "b",
+        description: "Books with author names",
+      },
+      {
+        name: "Total sales",
+        value: "s",
+        description: "Total sales ",
+      },
+      {
+        name: "Top 3 bestsellers",
+        value: "t",
+        description: "Add a new row to a table",
+      },
+      {
+        name: "Multiple Orders",
+        value: "m",
+        description: "Customers with multiple orders",
+      },
+      {
+        name: "Updates prices",
+        value: "u",
+        description: "Update price of all books by =/- 10%",
+      },
+      {
+        name: "Average price",
+        value: "a",
+        description: "Average Price for author's books",
+      },
+      {
+        name: "No books",
+        value: "n",
+        description: "Authors with no published books",
+      },
+      {
+        name: "No orders",
+        value: "i",
+        description: "Identiy customers with no orders",
+      },
+      {
+        name: "Back",
+        value: "back",
+        description: "Return to the main menu",
+      },
+      {
+        name: "Exit",
+        value: "exit",
+        description: "Exit the app",
+      },
+    ],
+  });
+
+	console.log(msg);
 
   switch (res) {
     case "b":
@@ -114,12 +159,14 @@ LEFT JOIN orders o ON c.customer_id=o.customer_id
 WHERE o.customer_id IS NULL
 `;
       break;
-    default:
-      console.log("sorry, I Didn't catch that");
-      sort();
+		case 'r':
+			return;
+    case "exit":
+      db.close();
+      process.exit();
   }
 
-	return {query:q, message: "success"}
-}
+  return { query: q, message: msg };
+};
 
 export default sort;
