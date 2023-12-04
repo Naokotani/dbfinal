@@ -18,7 +18,7 @@ async function main() {
         sort();
         break;
       case "list":
-        list();
+        await list();
         break;
       case "add":
         await add();
@@ -254,7 +254,7 @@ async function list() {
   console.log(
     "b: books, a, authors, o: orders, c:customers r: return to last menu\n"
   );
-  let res = await input("> ");
+  let res = await input({message: "> "});
   let q;
 
   switch (res) {
