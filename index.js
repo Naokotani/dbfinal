@@ -54,8 +54,8 @@ b: Books with author names
 s: Total sales 
 t: Top 3 bestsellers
 m: Customers with multiple orders
-u: update pice of all books by =/- 10%
-a: Average Price for authors books
+u: update price of all books by =/- 10%
+a: Average Price for author's books
 n: Authors with no published books
 i: Identiy customers with no orders
 `);
@@ -78,8 +78,8 @@ JOIN authors a ON b.author_id=a.author_id
       q = `
 SELECT b.title, SUM(o.quantity) * b.price AS "Total Sales"
 FROM books b
-JOIN orders o ON b.id=o.book_id
-GROUP BY b.id
+JOIN orders o ON b.book_id=o.book_id
+GROUP BY b.book_id
 `;
       break;
     case "t":
@@ -87,7 +87,7 @@ GROUP BY b.id
       q = `
 SELECT b.genre AS "Bestselling Genres"
 FROM books b
-JOIN orders o ON b.id=o.order_id
+JOIN orders o ON b.book_id=o.order_id
 WHERE b.genre <> ''
 GROUP BY b.genre
 ORDER BY COUNT(o.quantity) DESC
@@ -183,7 +183,7 @@ async function search() {
     case "b":
       const book = await input({ message: "Enter the book title: " });
       query = `
-SELECT b.id, b.title, a.author_name, b.genre, b.price
+SELECT b.book_id, b.title, a.author_name, b.genre, b.price
 FROM books b
 JOIN authors a ON b.author_id=a.author_id
 WHERE b.title="${book}";
@@ -206,7 +206,7 @@ b.title,
 o.order_date,
 o.quantity
 FROM orders o
-JOIN books b ON o.book_id=b.id
+JOIN books b ON o.book_id=b.book_id
 JOIN customers c ON o.customer_id=c.customer_id
 WHERE o.order_id=${order}
 `;
@@ -261,7 +261,7 @@ async function list() {
     case "b":
       console.log("Book list\n\n");
       q = `
-SELECT b.id, b.title, b.genre, b.price, a.author_name as author
+SELECT b.book_id, b.title, b.genre, b.price, a.author_name as author
 FROM books b
 JOIN authors a ON b.author_id=a.author_id
 `;
@@ -280,7 +280,7 @@ o.order_date as "Order Date",
 b.price,
 quantity AS Quantity
 FROM orders o
-JOIN books b ON o.book_id=b.id
+JOIN books b ON o.book_id=b.book_id
 JOIN customers c ON o.customer_id=c.customer_id
 `;
       break;
@@ -324,10 +324,17 @@ async function add() {
         "Plese enter the book details. For author id, list authors\n"
       );
 
+<<<<<<< HEAD
       const title = await input({ message: "Title: " });
       const authorId = parseInt(await input({ message: "Author ID:" }));
       const genre = await input({ message: "Genre: " });
       const price = parseInt(await input({ message: "Price: " }));
+=======
+      const title = prompt("Title: ");
+      const authorId = parseInt(prompt("Author ID:"));
+      const genre = prompt("Genre: ");
+      const price = parseInt(prompt("price: "));
+>>>>>>> main
       success = title + " added";
       q = `
 INSERT INTO books (title, author_id, genre, price)
@@ -375,6 +382,7 @@ VALUES ("${first}", "${last}", "${email}")`;
       process.exit();
     default:
       console.log("Sorry, didn't catch that.");
+			add();
   }
 
   await query(q, "success", success);

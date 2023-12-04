@@ -4,7 +4,7 @@ const db = new sqlite3.Database('data/final.db');
 db.serialize(() => {
   db.run(`
 CREATE TABLE books
-(id INTEGER PRIMARY KEY,
+(book_id INTEGER PRIMARY KEY,
 title VARCHAR[100],
 author_id INTEGER,
 genre VARCHAR[50],
@@ -39,12 +39,13 @@ quantity INTEGER)
 	const booksQuery = db.prepare("INSERT INTO books (title, author_id, genre, price) VALUES (?, ?, ?, ?)")
 	const books = [
 		[ "The greatest book", 1, "True Crime", 10.99,],
-		[ "One Flew over the Cuckoo's nest", 2, "", 12.99,],
-		[ "Crime and Punishment", 3, "", 15.99,],
-		[ "Of Human Bondage", 4, "", 17.99,],
-		[ "Heart of Darkness", 5, "", 9.99,],
-		[ "Siddartha", 6, "", 5.99,],
-		[ "Candide", 7, "", 20.99,],
+		[ "One Flew over the Cuckoo's nest", 2, "True Crime", 12.99,],
+		[ "Crime and Punishment", 3, "Fiction", 15.99,],
+		[ "Of Human Bondage", 4, "Horror", 17.99,],
+		[ "Heart of Darkness", 5, "Horror", 9.99,],
+		[ "Siddartha", 6, "True Crime", 5.99,],
+		[ "Candide", 7, "Classics", 20.99,],
+		[ "The Idiot", 3, "Fiction", 15.99,],
 	]
 
 	for (const e of books) {
@@ -62,6 +63,7 @@ quantity INTEGER)
 		[ "Joseph Conrad", "1857-12-03", "Great Britain"],
 		[ "Herman Hesse", "1877-07-02", "German"],
 		[ "Voltaire", "1694-11-12", "French"],
+		[ "John Steinbeck", "1902-02-27", "American"],
 	]
 
 	for (const e of authors) {
@@ -79,6 +81,7 @@ quantity INTEGER)
 		[ "Michael", "Jordan", "mikey@nba.com"],
 		[ "Joe", "Biden", "chief@whitehouse.gov"],
 		[ "Jenny", "Hughes", "numberonewife@gmail.com"],
+		[ "Barak", "Obama", "barak@whitehouse.gov"],
 	]
 
 	for (const e of customers) {
