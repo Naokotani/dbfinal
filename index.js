@@ -30,7 +30,6 @@ async function main() {
         remove();
         break;
       case "exit":
-        db.close();
         process.exit();
       case "?":
         console.log(help());
@@ -223,7 +222,6 @@ WHERE last_name="${customer}"
 `;
       break;
     case "exit":
-      db.close();
       process.exit();
     default:
       console.log("Sorry, didn't catch that");
@@ -303,7 +301,7 @@ FROM customers
       list();
   }
 
-  query(q);
+  await query(q);
 }
 
 /**
@@ -379,7 +377,7 @@ VALUES ("${first}", "${last}", "${email}")`;
       console.log("Sorry, didn't catch that.");
   }
 
-  query(q, "success", success);
+  await query(q, "success", success);
 }
 
 /**
@@ -449,27 +447,33 @@ async function remove() {
  * @param {string} t the type of query 'success' or 'update'
  * @param {string} m message displayed in the callback after the query
  */
-function query(q, t = "", m = "") {
-  if (m && m != "success") console.log(m);
-
+async function query(q, t = "", m = "") {
   const searchQuery = db.prepare(q);
+	let err;
 
-  searchQuery.each(
-    (err, row) => {
-      if (err) console.error(err);
-      console.log(row);
-    },
-    (err, rows) => {
-      if (err) console.error(err);
-      if (t === "success") console.log(m);
-      if (!rows && t != "update" && t != "success")
-        console.log("\n\n**Can't find record match.**\n\n");
-    }
-  );
+	return new Promise((resolve, reject) => {
+		searchQuery.each(
+			(e, row) => {
+				err = e;
+				for (let key in row) {
+					console.log(`${key}: ${row[key]}`);
+				}
+			}
+		), (e, rows) => {
+			err = e;
+			if (m && t === "success") console.log(m);
+			if (m && t != "success") console.log(m);
+			if (!rows && t != "update" && t != "success")
+				console.log("\n\n**Can't find record match.**\n\n");
 
-  searchQuery.finalize();
+			if (!err) {
+				resolve(() => {db.finalize();});
+			} else {
+				reject(() => {console.log(err)});
+			}
+		}
+	});
 }
-db.close();
 
 /**
  *Generates a help string
