@@ -12,6 +12,8 @@ import remove from "./queries/remove.js";
 
 /**
  *Main function that sorts prompts to direct to the correct query builder
+ * @async
+ * @function main
  */
 async function main() {
   while (true) {
@@ -52,10 +54,17 @@ async function main() {
 				},
 			],
 		});
+		
     switch (res) {
       case "queries":
+				/* Some quries don't return any data so I added a boolean
+				*  to determine whether they should go to queryEach or queryRun */
         q = await sort();
-        q && await queryEach(q.query, q.message);
+				if (q && q.run) {
+					await queryRun(q.query, q.message);
+				} else if (q) {
+					await queryEach(q.query, q.message);
+				}
         break;
       case "list":
         q = await list();
@@ -87,7 +96,9 @@ async function main() {
 main();
 
 /**
- * Queries the database
+ * Queries the database multiple times and returns an object for each row in the query result
+ * Prints the results in the rows Object. 
+ *
  * @param {string} q Query that is sent to the database
  * @param {string} m message displayed in the callback after the query
  */
@@ -96,8 +107,9 @@ async function queryEach(q, m = '') {
     const searchQuery = db.prepare(q);
     let err;
 		searchQuery.each(
-			(e) => {
+			(e, row) => {
 				err = e;
+				!row && console.log("Couldn't find any matching records")
 			},
 			(e, rows) => {
 				err = e;
@@ -116,12 +128,17 @@ async function queryEach(q, m = '') {
   });
 }
 
+/**
+ * Queries the database, but does not return any results.
+ * @param {string} q Query that is sent to the database
+ * @param {string} m message displayed in the callback after the query
+ */
 async function queryRun(q, m) {
   return new Promise((resolve, reject) => {
     const searchQuery = db.prepare(q);
-    searchQuery.run((err) => {
+    searchQuery.run(function (err) {
       !err && console.log(m);
-      searchQuery.finalize();
+			!this.lastID && console.log("**No records matched your query**");
       if (!err) {
         resolve();
       } else {
@@ -131,6 +148,11 @@ async function queryRun(q, m) {
   });
 }
 
+/**
+ * Queries the database. Retrieves and prints th results
+ * @param {string} q Query that is sent to the database
+ * @param {string} m message displayed in the callback after the query
+ */
 async function queryGet(q, m) {
 	return new Promise((resolve, reject) => {
 		const searchQuery = db.prepare(q);

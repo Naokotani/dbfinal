@@ -21,7 +21,8 @@
 
 
 
-
+# TODO
+I need to make sure I document the new methods I added.
 # Design Choices
 
 

@@ -1,3 +1,9 @@
+/**
+ *Main function that sorts prompts to direct to the correct query builder
+ * @function choices
+ * @return {Array} Choices for tables in that database.
+ */
+
 const choices = () => {
 	return [
 		{

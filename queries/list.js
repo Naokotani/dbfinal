@@ -3,9 +3,11 @@ import choices from './choices.js';
 
 /**
  * Lists tables in the database
+ * @async
+ * @function list
+ * @return {Object} An SQL Query and a message for a successful query.
  */
-
-const list  = async () => {
+const list = async () => {
 	const res = await select({
 		message: "What would you like to list?\n",
 		choices: choices(),
@@ -48,7 +50,7 @@ customer_id
 FROM customers
 `;
       break;
-	case 'r':
+	case 'back':
 			return;
     case "exit":
       db.close();

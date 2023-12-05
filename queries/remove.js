@@ -3,8 +3,12 @@ import { input } from "@inquirer/prompts";
 import select from '@inquirer/select';
 import choices from './choices.js';
 
+
 /**
  * Removes rows from the database
+ * @async
+ * @function remove
+ * @return {Object} An SQL Query and a message for a successful query.
  */
 const remove = async () => {
 	const db = new sqlite3.Database("data/final.db");

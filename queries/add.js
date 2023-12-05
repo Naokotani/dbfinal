@@ -4,6 +4,10 @@ import choices from './choices.js';
 
 /**
  * Generates queries to add rows to the database
+ *
+ * @async
+ * @function add
+ * @return {Object} An SQL Query and a message for a successful query.
  */
 const add = async () => {
 	const res = await select({

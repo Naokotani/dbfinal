@@ -3,9 +3,11 @@ import select from '@inquirer/select';
 import choices from './choices.js';
 
 /**
- *Generates simple search queries
+ * Generates simple search queries
+ * @async
+ * @function search
+ * @return {Object} An SQL Query and a message for a successful query.
  */
-
 const search = async () => {
   let query;
 	let msg = "\n***********************\n"

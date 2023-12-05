@@ -2,14 +2,18 @@ import { input } from "@inquirer/prompts";
 import select from '@inquirer/select';
 
 /**
- *Generates queries for the final project questions
+ * Generates queries for the final project questions
+ * @async
+ * @function search
+ * @return {Object} An SQL Query and a message for a successful query.
  */
 const sort = async () => {
   let q;
+	let run = false;
 	let msg = "\n***********************\n"
 
   const res = await select({
-    message: "Select a package manager",
+    message: "What query would you like?",
     choices: [
       {
         name: "Books with authors",
@@ -118,6 +122,7 @@ GROUP BY a.author_id
       break;
     case "u":
       // Update the price of all books in a specific genre by 10%.
+			run = true;
       const genre = await input({
         message: "Which Genre would you like to update? ",
       });
@@ -131,14 +136,13 @@ GROUP BY a.author_id
         o = "/";
       } else {
         console.log("incorrect input");
-        sort();
+        return;
       }
       q = `
 UPDATE books SET price=price${o}1.1
 WHERE genre="${genre}"
 `;
       msg = `updating ${genre}`;
-      type = "update";
 
       break;
     case "n":
@@ -159,14 +163,13 @@ LEFT JOIN orders o ON c.customer_id=o.customer_id
 WHERE o.customer_id IS NULL
 `;
       break;
-		case 'r':
+		case 'back':
 			return;
     case "exit":
-      db.close();
       process.exit();
   }
 
-  return { query: q, message: msg };
+  return { query: q, message: msg, run: run };
 };
 
 export default sort;
