@@ -1,7 +1,6 @@
 import sqlite3 from "sqlite3";
 import select from '@inquirer/select';
-const db = new sqlite3.Database("data/final.db");
-
+import fs from 'fs';
 
 /*Import query moldules*/
 import add from "./queries/add.js";
@@ -9,6 +8,17 @@ import sort from "./queries/sort.js";
 import list from "./queries/list.js";
 import search from "./queries/search.js";
 import remove from "./queries/remove.js";
+import setupDb from "./setup-database.js";
+
+
+// Check to see if the db file exists. If it does not, setup the database.
+await checkDbFile();
+
+// Set db variable after checking to see if it exists or it will be created automatically
+const db = new sqlite3.Database("data/final.db");
+
+//Start the main loop
+main();
 
 /**
  *Main function that sorts prompts to direct to the correct query builder
@@ -93,7 +103,6 @@ async function main() {
   }
 }
 
-main();
 
 /**
  * Queries the database multiple times and returns an object for each row in the query result
@@ -167,4 +176,14 @@ async function queryGet(q, m) {
 			}
 		});
 	});
+}
+
+/**
+ * Check to see if the databae file exists and if it does not, create it.:w
+ * @function checkDbFile
+ */
+async function checkDbFile() {
+	if (!fs.existsSync('./data/final.db')) {
+		await setupDb();
+	}
 }
