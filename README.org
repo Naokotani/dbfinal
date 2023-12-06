@@ -1,5 +1,14 @@
-#+title:      Networking and Security
-#+options: toc:nil
+#+title:     Database Final Report 
+#+LATEX_CLASS: article
+#+LATEX_CLASS_OPTIONS: [11pt]
+#+LaTeX_HEADER: \usepackage[letterpaper,margin=1in, top=.75in, bottom=.75in]{geometry}
+#+LaTeX_HEADER: \usepackage{titletoc}
+#+LaTeX_HEADER: \usepackage{wrapfig}
+#+LaTeX_HEADER: \usepackage[export]{adjustbox}
+#+LaTeX_HEADER: \usepackage{libertine}
+#+LaTeX_HEADER: \usepackage{minted}
+#+LaTeX_HEADER: \usepackage{pdfpages}
+#+OPTIONS: toc:nil H:7 num:1 ^:nil
 
 *  Design Choices
 ** Usage
@@ -17,7 +26,7 @@ One issue I see with the orders table is that if a customer bought multiple book
   FROM orders o
   JOIN customers c ON o.customer_id=c.customer_id
   JOIN books b ON o.book_id=b.book_id
-  GROUP BY o.customer_id AND o.order_date;
+  GROUP BY o.customer_id, o.order_date;
 #+END_SRC
 
 ** Async
@@ -34,7 +43,7 @@ I think the most important next step would be to create some functions for updat
 
 Another feature that could be nice is to add the delete warnings when attempting to delete something will cause data inconsistencies. 
 
-If that database were actually used for any real number of books/orders etc. it would be likely useful to have some kind of pager built in or better control on the limit of rows returned. 
+If the database were actually used for any real number of books/orders etc. it would be likely useful to have some kind of pager built in or better control on the limit of rows returned. 
 
 * Normalization
 ** First Normal Form
@@ -50,7 +59,7 @@ All of the columns are directly related to the primary key. We know this because
 ** Second Normal Form
 *** The tables conform to first normal form
 *** Non-primary key attributes depend on all attributes of a composite key.
-None of the tables rely on a composite key. You could consider using a composite key in the orders table using  =customer_id= , =book_id= and =date=,  as long as you are certain to be able to record the exact time of the purchase and not just the day of the purchase, but if multiple books were bought at the same time.
+None of the tables rely on a composite key. You could consider using a composite key in the orders table using  =customer_id= , =book_id= and =date=,  as long as you are certain to be able to record the exact time of the purchase and not just the day of the purchase, but if multiple books were bought at the same time then this would not work.
 
 ** Third Normal Form
 *** The tables conform to first and second normal form
@@ -86,22 +95,22 @@ In order to get the total sales, multiply the combined quantities of a =book_id=
 #+BEGIN_SRC sql
   SELECT b.title, SUM(o.quantity) * b.price AS "Total Sales"
   FROM books b
-  JOIN orders o ON b.id=o.book_id
-  GROUP BY  b.id
+  JOIN orders o ON b.book_id=o.book_id
+  GROUP BY  b.book_id
 #+END_SRC
 
 *** Example output
 #+BEGIN_SRC js
   { title: "One Flew over the Cuckoo's nest", 'Total Sales': 77.94 }
   { title: 'Crime and Punishment', 'Total Sales': 19.35 }
-  { title: 'Of Human Bondage', 'Total Sales': 719.5999999999999 }
+  { title: 'Of Human Bondage', 'Total Sales': 719.59 }
   { title: 'Heart of Darkness', 'Total Sales': 229.77 }
   { title: 'Siddartha', 'Total Sales': 5.99 }
   { title: 'Candide', 'Total Sales': 41.98 }
 #+END_SRC
 
 ** 3. Identify the top 3 bestselling genres.
-I join the book and order table and aggregate genre so that I can =SUM()= the combined quantities based on the genre. I test to make sure the genre has'nt been left blank as well so that if there are a lot of instances where the genre has been left blank, genre: blank won't be a top result.
+I join the book and order table and aggregate genre so that I can =SUM()= the combined quantities based on the genre. I test to make sure the genre hasn't been left blank as well so that if there are a lot of instances where the genre has been left blank, genre: blank won't be a top result. When I first did this, I had accidentally put COUNT() instead of SUM(), which of course gave me the number of times the book had been ordered, but not the total quantity of orders.
 
 *** Query
 #+BEGIN_SRC sql
@@ -121,18 +130,19 @@ I join the book and order table and aggregate genre so that I can =SUM()= the co
 { 'Bestselling Genres': 'True Crime', 'Books Sold': 7 }
 { 'Bestselling Genres': 'Classics', 'Books Sold': 2 }
 #+END_SRC
+
 ** 4. List customers who have made at least two orders.
-I aggregate customer IDs to combine the number of =order_id= and if that is greater than 1, we know they have placed multiple orders. When I first did this, I had accidentally put COUNT() instead of SUM(), which of course gave me the number of times the book had been ordered, but not the total quantity of orders.
+I aggregate customer IDs to combine the number of =order_id= and if that is greater than 1, we know they have placed multiple orders. 
 
 *** Query
 #+BEGIN_SRC sql
   SELECT c.customer_id,
   c.first_name || " " || c.last_name AS "Customer Name",
-  SUM(o.order_id) AS "Orders Placed"
+  COUNT(o.order_id) AS "Orders Placed"
   FROM customers c
   JOIN orders o ON c.customer_id=o.customer_id
   GROUP BY c.customer_id
-  HAVING SUM(o.order_id)>1
+  HAVING COUNT(o.order_id)>1
 #+END_SRC
 
 *** Example output
@@ -190,7 +200,7 @@ And then after the Query. I double checked with a calculator to ensure the value
 }
 #+END_SRC
 ** 6. Calculate the average price of books for each author.
-I aggregate by =author_id= so that I can get the average of the prices column
+I aggregate by =author_id= so that I can get the average of the prices column. I round to 2 decimals to be a suitable dollar amount.
 
 *** Query
 #+BEGIN_SRC sql
@@ -220,6 +230,7 @@ I aggregate by =author_id= so that I can get the average of the prices column
 { author_id: 8, author_name: 'John Steinbeck', 'Average Price': 8 }
 #+END_SRC
 ** 7. Retrieve the authors who have not published any books.
+I use a left join to display the left column results where join doesn't find a match and only display the entries where the id is null.
 *** Query
 #+BEGIN_SRC sql
 SELECT a.author_id, a.author_name
@@ -233,6 +244,7 @@ WHERE b.author_id IS NULL
 { author_id: 9, author_name: 'Jesus Christ' }
 #+END_SRC
 ** 8. Identify customers who have not placed any orders.
+Essentially the same as the last query
 *** Query
 #+BEGIN_SRC sql
 SELECT c.customer_id, c.first_name || " " || c.last_name As "Customer Name"
