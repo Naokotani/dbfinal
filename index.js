@@ -147,7 +147,8 @@ async function queryRun(q, m) {
     const searchQuery = db.prepare(q);
     searchQuery.run(function (err) {
       !err && console.log(m);
-			!this.lastID && console.log("**No records matched your query**");
+			!this.changes && console.log("**No records matched your query**");
+
       if (!err) {
         resolve();
       } else {

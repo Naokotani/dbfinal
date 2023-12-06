@@ -90,12 +90,13 @@ GROUP BY b.book_id
     case "t":
       // Identify the top 3 bestselling genres.
       q = `
-SELECT b.genre AS "Bestselling Genres"
+SELECT b.genre AS "Bestselling Genres",
+SUM(o.quantity) AS "Books Sold"
 FROM books b
-JOIN orders o ON b.book_id=o.order_id
+JOIN orders o ON b.book_id=o.book_id
 WHERE b.genre <> ''
 GROUP BY b.genre
-ORDER BY COUNT(o.quantity) DESC
+ORDER BY SUM(o.quantity) DESC
 LIMIT 3
 `;
       break;
@@ -114,7 +115,7 @@ HAVING count(o.order_id)>1
     case "a":
       // Calculate the average price of books for each author.
       q = `
-SELECT a.author_id, a.author_name, avg(b.price) AS "Average Price"
+SELECT a.author_id, a.author_name, ROUND(AVG(b.price), 2) AS "Average Price"
 FROM authors a
 JOIN books b ON a.author_id=b.author_id
 GROUP BY a.author_id
@@ -139,7 +140,7 @@ GROUP BY a.author_id
         return;
       }
       q = `
-UPDATE books SET price=price${o}1.1
+UPDATE books SET price=ROUND(price${o}1.1, 2)
 WHERE genre="${genre}"
 `;
       msg = `updating ${genre}`;

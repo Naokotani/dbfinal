@@ -28,7 +28,7 @@ const remove = async () => {
   switch (res) {
     case "a":
       table = "authors";
-			const authorId = parseInt(
+			const authorId = parseFloat(
 				await input({ message: "Please enter Author ID: " }),
 			);
 			if (isNaN(authorId)) {
@@ -41,7 +41,7 @@ const remove = async () => {
     case "c":
       table = "customers";
 
-			const	customerId = parseInt(
+			const	customerId = parseFloat(
 				await input({ message: "Please enter Customer ID: " }),
 			);
 			if (isNaN(customerId)) {
@@ -53,7 +53,7 @@ const remove = async () => {
       break;
     case "o":
       table = "orders";
-			const orderId = parseInt(
+			const orderId = parseFloat(
 				await input({ message: "Please enter Order ID: " }),
 			);
 			if (isNaN(orderId)) {
@@ -65,7 +65,7 @@ const remove = async () => {
       break;
     case "b":
       table = "books";
-			const	bookId = parseInt(
+			const	bookId = parseFloat(
 				await input({ message: "Please enter Book ID: " }),
 			);
 			if (isNaN(bookId)) {

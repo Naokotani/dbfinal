@@ -25,9 +25,9 @@ const add = async () => {
       );
 
       const title = await input({ message: "Title: " });
-			const	authorId = parseInt(await input({ message: "Author ID:" }));
+			const	authorId = parseFloat(await input({ message: "Author ID:" }));
       const genre = await input({ message: "Genre: " });
-			const	price = parseInt(await input({ message: "Price: " }));
+			const	price = parseFloat(await input({ message: "Price: " }));
 			if (isNaN(price) || isNaN(authorId)) {
 				console.log("Not a valid number");
 				return;
@@ -55,9 +55,9 @@ VALUES ("${name}", "${birth}", "${nationality}")`;
         "In order to add order, please search book and customer for ID\n"
       );
 
-			const	customerId = parseInt(await input({ message: "Customer ID: " }));
-			const	bookId = parseInt(await input({ message: "Book ID: " }));
-			const	quantity = parseInt(await input({ message: "Quantity: " }));
+			const	customerId = parseFloat(await input({ message: "Customer ID: " }));
+			const	bookId = parseFloat(await input({ message: "Book ID: " }));
+			const	quantity = parseFloat(await input({ message: "Quantity: " }));
 			if (isNaN(customerId) || isNaN(bookId) || isNaN(quantity)){
 				console.log("Not a valid number.")
 				return;
