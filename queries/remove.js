@@ -12,14 +12,17 @@ import choices from './choices.js';
  */
 const remove = async () => {
 	const db = new sqlite3.Database("data/final.db");
-  let success;
+  let successId;
   let where;
   let table;
-  let messageTail = " deleted succesfully";
 
   console.log(
     "**CAUTION: Deleting from the database may cause data inconsistencies!**\n",
   );
+  console.log(
+    "For more information see README\n",
+  );
+
 	const res = await select({
 		message: "What table would you like to remove from?\n",
 		choices: choices(),
@@ -36,7 +39,7 @@ const remove = async () => {
 				return;
 			}
 			where = `WHERE author_id=${authorId}`;
-			success = authorId + messageTail;
+			successId = authorId;
 			break;
     case "c":
       table = "customers";
@@ -49,7 +52,7 @@ const remove = async () => {
 				return;
 			}
       where = `WHERE customer_id=${customerId}`;
-      success = customerId + messageTail;
+      successId = customerId;
       break;
     case "o":
       table = "orders";
@@ -61,7 +64,7 @@ const remove = async () => {
 				return;
 			}
       where = `WHERE order_id=${orderId}`;
-      success = orderId + messageTail;
+      successId = orderId;
       break;
     case "b":
       table = "books";
@@ -73,7 +76,7 @@ const remove = async () => {
 				return;
 			}
       where = `WHERE book_id=${bookId}`;
-      success = bookId + messageTail;
+      successId = bookId;
       break;
 		case 'back':
 			return;
@@ -85,9 +88,10 @@ const remove = async () => {
       remove();
 }
 
+	const message = `\nID: ${successId} successfully Removed\n`
   const query = `DELETE FROM ${table} ${where}`;
 
-	return {query: query, message: success};
+	return {query: query, message: message};
 
 };
 

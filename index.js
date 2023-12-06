@@ -146,8 +146,11 @@ async function queryRun(q, m) {
   return new Promise((resolve, reject) => {
     const searchQuery = db.prepare(q);
     searchQuery.run(function (err) {
-      !err && console.log(m);
-			!this.changes && console.log("**No records matched your query**");
+			if (!err && this.changes) {
+				console.log(m);
+			} else if (!err && !this.changes) {
+				console.log("\n**No records matched your query**\n");
+			}
 
       if (!err) {
         resolve();
